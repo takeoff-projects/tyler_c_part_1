@@ -22,7 +22,7 @@ type Pet struct {
 	Likes   int       `datastore:"likes"`
 	Owner   string    `datastore:"owner"`
 	Petname string    `datastore:"petname"`
-	Name    string     // The ID used in the datastore.
+	Name    string     `datastore:"pets"`
 }
 
 // GetPets Returns all pets from datastore ordered by likes in Desc Order
@@ -36,12 +36,15 @@ func GetPets() ([]Pet, error) {
 	var pets []Pet
 	ctx := context.Background()
 	client, err := datastore.NewClient(ctx, projectID)
+	fmt.Println("findme")
+	fmt.Println(client)
 	if err != nil {
 		log.Fatalf("Could not create datastore client: %v", err)
 	}
 
 	// Create a query to fetch all Pet entities".
 	query := datastore.NewQuery("Pet").Order("-likes")
+	fmt.Println(query)
 	keys, err := client.GetAll(ctx, query, &pets)
 	if err != nil {
 		fmt.Println(err)
