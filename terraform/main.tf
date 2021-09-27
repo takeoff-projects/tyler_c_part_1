@@ -11,7 +11,7 @@ resource "google_cloud_run_service" "default" {
   template {
     spec {
       containers {
-        image = "gcr.io/roi-takeoff-user3/go-pets:v1.0"
+        image = "gcr.io/roi-takeoff-user96/go-pets:v1.0"
       }
     }
   }
