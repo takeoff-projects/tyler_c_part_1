@@ -1,12 +1,13 @@
 
 provider "google" {
-  project = var.project_id
-  region  = var.provider_region
+  project = "roi-takeoff-user96"
+  region  = "us-central1"
+  zone    = "us-central1-c"
 }
 
 resource "google_cloud_run_service" "default" {
   name     = "cloudrun-pets"
-  location = "us-east1"
+  location = "us-central1"
 
   template {
     spec {
@@ -14,6 +15,10 @@ resource "google_cloud_run_service" "default" {
         image = "gcr.io/roi-takeoff-user96/go-pets:v1.0"
       }
     }
+  }
+  traffic { # I wonder, do we need this?
+    percent         = 100
+    latest_revision = true
   }
 }
 
