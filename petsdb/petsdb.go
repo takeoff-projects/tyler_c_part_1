@@ -1,31 +1,31 @@
 package petsdb
 
 import (
-	
+
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
-
-	"cloud.google.com/go/datastore"
+	"google.golang.org/api/iterator"
+	"cloud.google.com/go/firestore"
 )
 
 var projectID string
 
-// Pet model stored in Datastore
+// Pet model stored in firestore
 type Pet struct {
-	Added   time.Time `datastore:"added"`
-	Caption string    `datastore:"caption"`
-	Email   string    `datastore:"email"`
-	Image   string    `datastore:"image"`
-	Likes   int       `datastore:"likes"`
-	Owner   string    `datastore:"owner"`
-	Petname string    `datastore:"petname"`
-	Name    string     `datastore:"pets"`
+	Added   time.Time `firestore:"added"`
+	Caption string    `firestore:"caption"`
+	Email   string    `firestore:"email"`
+	Image   string    `firestore:"image"`
+	Likes   int       `firestore:"likes"`
+	Owner   string    `firestore:"owner"`
+	Petname string    `firestore:"petname"`
+	Name    string    `firestore:"pets"`
 }
 
-// GetPets Returns all pets from datastore ordered by likes in Desc Order
+// GetPets Returns all pets from firestore ordered by likes in Desc Order
 func GetPets() ([]Pet, error) {
 
 	projectID = os.Getenv("GOOGLE_CLOUD_PROJECT")
@@ -35,26 +35,39 @@ func GetPets() ([]Pet, error) {
 
 	var pets []Pet
 	ctx := context.Background()
-	client, err := datastore.NewClient(ctx, projectID)
-	fmt.Println("findme")
+	client, err := firestore.NewClient(ctx, projectID)
 	fmt.Println(client)
 	if err != nil {
-		log.Fatalf("Could not create datastore client: %v", err)
+		log.Fatalf("Could not create firestore client: %v", err)
 	}
 
 	// Create a query to fetch all Pet entities".
-	query := datastore.NewQuery("Pet").Order("-likes")
-	fmt.Println(query)
-	keys, err := client.GetAll(ctx, query, &pets)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
+	var ordered_pets = client.Collection("pets").Documents(ctx)//.OrderBy("-likes", firestore.Desc)
+	fmt.Println(ordered_pets)
+
+	defer ordered_pets.Stop() //  make sure our resources get cleaned up
+	for {
+		doc, err := ordered_pets.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			// Handle error, possibly by returning the error
+			// to the caller. Break the loop or return.
+			fmt.Println(err)
+			break
+		}
+		var pet Pet
+		if err := doc.DataTo(&pet); err != nil {
+			// Handle error, possibly by returning the error
+			// to the caller. Continue the loop,
+			// break the loop or return.
+			fmt.Println(err)
+    	}
+   	 	pets = append(pets, pet)
 	}
 
 	// Set the id field on each Task from the corresponding key.
-	for i, key := range keys {
-		pets[i].Name = key.Name
-	}
 
 	client.Close()
 	return pets, nil
