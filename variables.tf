@@ -4,5 +4,5 @@ variable "project_id" {
 
 variable "provider_region" {
   type    = string
-  default = "us-east1"
+  default = "us-central1"
 }

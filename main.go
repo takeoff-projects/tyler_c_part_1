@@ -35,6 +35,7 @@ func main() {
 	// The rest of the routes
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/about", aboutHandler)
+	mux.HandleFunc("/add-pet", addPetHandler)
 
 
 	log.Printf("Webserver listening on Port: %s", port)
@@ -47,7 +48,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if error != nil {
 		fmt.Print(error)
 	}
-	fmt.Print(pets)
 
 	data := HomePageData{
 		PageTitle: "Pets Home Page",
@@ -87,6 +87,26 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("About Page Served")
 }
 
+func addPetHandler(w http.ResponseWriter, r *http.Request) {
+	data := AddingPageData{
+		PageTitle: "Adding Bryans",
+	}
+	var tpl = template.Must(template.ParseFiles("templates/add-pet.html", "templates/layout.html"))
+
+	buf := &bytes.Buffer{}
+	err := tpl.Execute(buf, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+
+	buf.WriteTo(w)
+	log.Println("Adding Page Served")
+	petsdb.AddPets()
+	log.Println("a new bryan has been added!")
+}
+
 // HomePageData for Index template
 type HomePageData struct {
 	PageTitle string
@@ -95,6 +115,9 @@ type HomePageData struct {
 
 // AboutPageData for About template
 type AboutPageData struct {
+	PageTitle string
+}
+type AddingPageData struct {
 	PageTitle string
 }
 

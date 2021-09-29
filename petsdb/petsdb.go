@@ -25,7 +25,7 @@ type Pet struct {
 	Name    string    `firestore:"pets"`
 }
 
-// GetPets Returns all pets from firestore ordered by likes in Desc Order
+// GetPets Returns all pets from firestore
 func GetPets() ([]Pet, error) {
 
 	projectID = os.Getenv("GOOGLE_CLOUD_PROJECT")
@@ -36,13 +36,12 @@ func GetPets() ([]Pet, error) {
 	var pets []Pet
 	ctx := context.Background()
 	client, err := firestore.NewClient(ctx, projectID)
-	fmt.Println(client)
 	if err != nil {
 		log.Fatalf("Could not create firestore client: %v", err)
 	}
 
 	// Create a query to fetch all Pet entities".
-	var ordered_pets = client.Collection("pets").Documents(ctx)//.OrderBy("-likes", firestore.Desc)
+	var ordered_pets = client.Collection("pets").Documents(ctx)
 	fmt.Println(ordered_pets)
 
 	defer ordered_pets.Stop() //  make sure our resources get cleaned up
@@ -52,16 +51,11 @@ func GetPets() ([]Pet, error) {
 			break
 		}
 		if err != nil {
-			// Handle error, possibly by returning the error
-			// to the caller. Break the loop or return.
 			fmt.Println(err)
 			break
 		}
 		var pet Pet
 		if err := doc.DataTo(&pet); err != nil {
-			// Handle error, possibly by returning the error
-			// to the caller. Continue the loop,
-			// break the loop or return.
 			fmt.Println(err)
     	}
    	 	pets = append(pets, pet)
@@ -71,4 +65,25 @@ func GetPets() ([]Pet, error) {
 
 	client.Close()
 	return pets, nil
+}
+func AddPets() {
+	ctx := context.Background()
+	client, err := firestore.NewClient(ctx, projectID)
+	if err != nil {
+		log.Fatalf("Could not create firestore client: %v", err)
+	}
+
+	client.Collection("pets").Add(ctx, map[string]interface{}{
+        "added":    time.Now(),
+        "caption":   "pretty bryan",
+        "email": "bryguyluvr@xvideos.com",
+		"image": "img of bryan",
+		"likes": "69",
+		"owner": "bryan's wife",
+		"petname": "bryan",
+		"name": "pet",
+		})
+	if err != nil {
+        log.Printf("An error has occurred: %s", err)
+	}
 }
